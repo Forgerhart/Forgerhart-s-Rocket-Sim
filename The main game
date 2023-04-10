@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Define rocket parts
+        Dictionary<string, RocketPart> availableParts = new Dictionary<string, RocketPart>();
+        availableParts.Add("Pointy", new RocketPart("Pointy", 1500f, 10f,0f, "/||\\", "A basic rocket nose cone."));
+        availableParts.Add("Orange", new RocketPart("Orange", 2000f, 40f,0f, "|==|", "A sturdy rocket fuel tank."));
+        availableParts.Add("Mighty", new RocketPart("Mighty", 3000f, 20f, 100f, "/^^^\\", "A powerful rocket engine."));
+        availableParts.Add("Swoopy", new RocketPart("Swoopy", 1000f, 5f,0f, "\\___/", "A streamlined rocket tail."));
+
+        // Ask user to choose parts for custom rocket
+        List<RocketPart> chosenParts = new List<RocketPart>();
+        while (true)
+        {
+            Console.WriteLine("Choose a rocket part to add (or type 'done' to finish building):");
+            foreach (KeyValuePair<string, RocketPart> kvp in availableParts)
+            {
+                Console.WriteLine("{0} - {1} ({2:C}, {3} kg) - {4}", kvp.Key, kvp.Value.name, kvp.Value.cost, kvp.Value.weight, kvp.Value.description);
+            }
+            string input = Console.ReadLine();
+            if (input.ToLower() == "done")
+            {
+                if (chosenParts.Count == 0)
+                {
+                    Console.WriteLine("You must choose at least one part to build a rocket.");
+                    continue;
+                }
+                break;
+            }
+            if (availableParts.ContainsKey(input))
+            {
+                chosenParts.Add(availableParts[input]);
+                Console.WriteLine("{0} added to rocket.", availableParts[input].name);
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please choose a valid rocket part.");
+            }
+        }
+
+        // Build rocket
+        Console.WriteLine("Building rocket...");
+        Rocket rocket = new Rocket(chosenParts);
+        Console.WriteLine("Rocket built!");
+
+        // Calculate total rocket stats
+        float totalCost = 0f;
+        float totalWeight = 0f;
+        float totalThrust = 0f;
+        foreach (RocketPart part in rocket.parts)
+        {
+            totalCost += part.cost;
+            totalWeight += part.weight;
+            if (part.thrust > 0f)
+            {
+                totalThrust += part.thrust;
+            }
+        }
+
+        float twr = totalThrust / totalWeight;
+        // Estimate acceleration of the rocket
+        float g = 9.81f; // gravitational acceleration
+        float a = twr * g; // estimated acceleration
+
+        // Calculate maximum altitude
+        float maxAltitude = (totalThrust / totalWeight) * (totalThrust / (2f * g));
+        // Display total rocket stats
+        Console.WriteLine("Total Cost: {0:C}", totalCost);
+        Console.WriteLine("Total Weight: {0} kg", totalWeight);
+        Console.WriteLine("Thrust-to-Weight Ratio: {0:F2}", twr);
+
+        // Display total rocket stats
+        Console.WriteLine("Total Cost: {0:C}", totalCost);
+        Console.WriteLine("Total Weight: {0} kg", totalWeight);
+        Console.WriteLine("Thrust-to-Weight Ratio: {0:F2}", twr);
+        Console.WriteLine("Max Altitude: {0} km", maxAltitude);
+
+        // Draw ASCII graphics of the rocket
+        Console.WriteLine("\nASCII Graphics:");
+        for (int i = rocket.parts.Count - 1; i >= 0; i--)
+        {
+            Console.WriteLine(rocket.parts[i].graphic);
+        }
+    }
+}
+
+class RocketPart
+{
+    public string name;
+    public float cost;
+    public float weight;
+    public string graphic;
+    public string description;
+    public float thrust; // add a new property for thrust
+    public RocketPart(string name, float cost, float weight, float thrust, string graphic, string description)
+    {
+        this.name = name;
+        this.cost = cost;
+        this.weight = weight;
+        this.thrust = thrust; // initialize thrust property
+        this.graphic = graphic;
+        this.description = description;
+    }
+}
+class Rocket
+{
+    public List<RocketPart> parts;
+    public Rocket(List<RocketPart> parts)
+    {
+        this.parts = parts;
+    }
+}
